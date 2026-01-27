@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>クリックで色が変わる文字</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        font-family: "Noto Sans JP", system-ui, -apple-system, sans-serif;
+        background: linear-gradient(135deg, #f9fafc 0%, #e8ecf7 100%);
+      }
+
+      .container {
+        text-align: center;
+        padding: 2rem 3rem;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 24px;
+        box-shadow: 0 24px 45px rgba(23, 33, 77, 0.15);
+      }
+
+      #greeting {
+        font-size: clamp(2.5rem, 5vw, 4rem);
+        font-weight: 700;
+        color: #1f2a5a;
+        cursor: pointer;
+        transition: color 0.25s ease, transform 0.25s ease;
+      }
+
+      #greeting:hover {
+        transform: scale(1.03);
+      }
+
+      .hint {
+        margin-top: 0.75rem;
+        font-size: 1rem;
+        color: #4c5a89;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div id="greeting" role="button" tabindex="0" aria-label="クリックで色が変わるこんにちは">
+        こんにちは
+      </div>
+      <div class="hint">クリックすると文字の色が変わります。</div>
+    </div>
+
+    <script>
+      const greeting = document.getElementById("greeting");
+      const colors = ["#1f2a5a", "#e63946", "#2a9d8f", "#f4a261", "#6f2dbd"];
+      let currentIndex = 0;
+
+      const updateColor = () => {
+        currentIndex = (currentIndex + 1) % colors.length;
+        greeting.style.color = colors[currentIndex];
+      };
+
+      greeting.addEventListener("click", updateColor);
+      greeting.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          updateColor();
+        }
+      });
+    </script>
+  </body>
+</html>
