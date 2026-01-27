@@ -1,0 +1,13 @@
+{
+  "users": [
+    {
+      "id": "shizuoka",
+      "password": {
+        "salt": "1ef68e0f36b0205dff42991d848a304e",
+        "hash": "7033a2033f47d1a901cc29cdd4796aad46165064886963c31bb3d6961187c256",
+        "iterations": 100000,
+        "algorithm": "sha256"
+      }
+    }
+  ]
+}

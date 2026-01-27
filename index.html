@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>クリックで色が変わる文字</title>
+    <title>ログイン</title>
     <style>
       :root {
         color-scheme: light dark;
@@ -19,15 +19,73 @@
       }
 
       .container {
+        width: min(420px, 90vw);
         text-align: center;
-        padding: 2rem 3rem;
-        background: rgba(255, 255, 255, 0.9);
+        padding: 2rem 2.5rem;
+        background: rgba(255, 255, 255, 0.95);
         border-radius: 24px;
         box-shadow: 0 24px 45px rgba(23, 33, 77, 0.15);
       }
 
+      h1 {
+        margin: 0 0 1.5rem;
+        font-size: 1.8rem;
+        color: #1f2a5a;
+      }
+
+      form {
+        display: grid;
+        gap: 1rem;
+      }
+
+      label {
+        display: grid;
+        text-align: left;
+        gap: 0.5rem;
+        color: #1f2a5a;
+        font-weight: 600;
+      }
+
+      input {
+        width: 100%;
+        padding: 0.75rem 0.9rem;
+        border-radius: 12px;
+        border: 1px solid #d2d8ea;
+        font-size: 1rem;
+      }
+
+      button {
+        padding: 0.8rem 1.2rem;
+        border-radius: 999px;
+        border: none;
+        background: #1f2a5a;
+        color: #fff;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 10px 20px rgba(31, 42, 90, 0.2);
+      }
+
+      .status {
+        margin-top: 1rem;
+        min-height: 1.5rem;
+        font-size: 0.95rem;
+        color: #4c5a89;
+      }
+
+      .success {
+        color: #2a9d8f;
+        font-weight: 600;
+      }
+
       #greeting {
-        font-size: clamp(2.5rem, 5vw, 4rem);
+        margin-top: 1.75rem;
+        font-size: clamp(2rem, 5vw, 3rem);
         font-weight: 700;
         color: #1f2a5a;
         cursor: pointer;
@@ -40,28 +98,110 @@
 
       .hint {
         margin-top: 0.75rem;
-        font-size: 1rem;
+        font-size: 0.95rem;
         color: #4c5a89;
       }
     </style>
   </head>
   <body>
     <div class="container">
-      <div id="greeting" role="button" tabindex="0" aria-label="クリックで色が変わるこんにちは">
+      <h1>ログイン</h1>
+      <form id="login-form">
+        <label>
+          ID
+          <input type="text" name="id" autocomplete="username" required />
+        </label>
+        <label>
+          パスワード
+          <input type="password" name="password" autocomplete="current-password" required />
+        </label>
+        <button type="submit">ログイン</button>
+      </form>
+      <div class="status" id="status"></div>
+      <div id="greeting" role="button" tabindex="0" aria-label="クリックで色が変わるこんにちは" hidden>
         こんにちは
       </div>
-      <div class="hint">クリックすると文字の色が変わります。</div>
+      <div class="hint" id="hint" hidden>クリックすると文字の色が変わります。</div>
     </div>
 
     <script>
+      const form = document.getElementById("login-form");
+      const status = document.getElementById("status");
       const greeting = document.getElementById("greeting");
+      const hint = document.getElementById("hint");
       const colors = ["#1f2a5a", "#e63946", "#2a9d8f", "#f4a261", "#6f2dbd"];
       let currentIndex = 0;
+
+      const setStatus = (message, isSuccess = false) => {
+        status.textContent = message;
+        status.className = isSuccess ? "status success" : "status";
+      };
 
       const updateColor = () => {
         currentIndex = (currentIndex + 1) % colors.length;
         greeting.style.color = colors[currentIndex];
       };
+
+      const showGreeting = (userId) => {
+        greeting.hidden = false;
+        hint.hidden = false;
+        setStatus(`${userId} さん、ログインしました。`, true);
+      };
+
+      const checkSession = async () => {
+        const token = localStorage.getItem("authToken");
+        if (!token) {
+          return;
+        }
+
+        try {
+          const response = await fetch("/api/me", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+
+          if (!response.ok) {
+            localStorage.removeItem("authToken");
+            return;
+          }
+
+          const data = await response.json();
+          showGreeting(data.id);
+        } catch (error) {
+          localStorage.removeItem("authToken");
+        }
+      };
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        setStatus("ログイン処理中...");
+
+        const formData = new FormData(form);
+        const payload = {
+          id: formData.get("id"),
+          password: formData.get("password"),
+        };
+
+        try {
+          const response = await fetch("/api/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            setStatus(data.message || "ログインに失敗しました。");
+            return;
+          }
+
+          localStorage.setItem("authToken", data.token);
+          showGreeting(data.user.id);
+          form.reset();
+        } catch (error) {
+          setStatus("通信エラーが発生しました。");
+        }
+      });
 
       greeting.addEventListener("click", updateColor);
       greeting.addEventListener("keydown", (event) => {
@@ -70,6 +210,8 @@
           updateColor();
         }
       });
+
+      checkSession();
     </script>
   </body>
 </html>
