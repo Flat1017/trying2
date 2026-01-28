@@ -16,6 +16,10 @@ const usersData = JSON.parse(fs.readFileSync(usersPath, "utf8"));
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
+app.get("/login", (req, res) => {
+  res.sendFile(path.join(__dirname, "index.html"));
+});
+
 const hashPassword = (password, salt, iterations, algorithm) =>
   crypto.pbkdf2Sync(password, salt, iterations, 32, algorithm).toString("hex");
 
