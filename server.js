@@ -7,6 +7,8 @@ const fs = require("fs");
 const app = express();
 const port = process.env.PORT || 3000;
 const jwtSecret = process.env.JWT_SECRET || crypto.randomBytes(32).toString("hex");
+const envUserId = process.env.USE_ID;
+const envUserPassword = process.env.USER_PASSWORD;
 
 const usersPath = path.join(__dirname, "users.json");
 const usersData = JSON.parse(fs.readFileSync(usersPath, "utf8"));
@@ -19,11 +21,33 @@ const hashPassword = (password, salt, iterations, algorithm) =>
 
 const getUserById = (id) => usersData.users.find((user) => user.id === id);
 
+const loginWithEnvCredentials = (id, password) => {
+  if (!envUserId || !envUserPassword) {
+    return null;
+  }
+
+  if (id !== envUserId || password !== envUserPassword) {
+    return false;
+  }
+
+  return { id: envUserId };
+};
+
 app.post("/api/login", (req, res) => {
   const { id, password } = req.body;
 
   if (!id || !password) {
     return res.status(400).json({ message: "IDとパスワードを入力してください。" });
+  }
+
+  const envUser = loginWithEnvCredentials(id, password);
+  if (envUser === false) {
+    return res.status(401).json({ message: "IDまたはパスワードが正しくありません。" });
+  }
+
+  if (envUser) {
+    const token = jwt.sign({ sub: envUser.id }, jwtSecret, { expiresIn: "2h" });
+    return res.json({ token, user: { id: envUser.id } });
   }
 
   const user = getUserById(id);
