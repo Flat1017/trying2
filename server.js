@@ -7,7 +7,7 @@ const fs = require("fs");
 const app = express();
 const port = process.env.PORT || 3000;
 const jwtSecret = process.env.JWT_SECRET || crypto.randomBytes(32).toString("hex");
-const envUserId = process.env.USE_ID;
+const envUserId = process.env.USER_ID;
 const envUserPassword = process.env.USER_PASSWORD;
 
 const usersPath = path.join(__dirname, "users.json");

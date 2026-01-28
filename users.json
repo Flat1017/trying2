@@ -3,8 +3,8 @@
     {
       "id": "shizuoka",
       "password": {
-        "salt": "1ef68e0f36b0205dff42991d848a304e",
-        "hash": "7033a2033f47d1a901cc29cdd4796aad46165064886963c31bb3d6961187c256",
+        "salt": "28d226818494268525ef19e03fdbc5c5",
+        "hash": "16f6908c7ee9dda539b38331484fd3d42295cb888b28bdd356901cb47412aadb",
         "iterations": 100000,
         "algorithm": "sha256"
       }
